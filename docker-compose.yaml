@@ -71,7 +71,7 @@ services:
       - 8888:8888
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-      - ./certs:/etc/haproxy/certs:ro
+      - /data/coolify/proxy/certs:/etc/haproxy/certs:ro
     restart: unless-stopped
     networks:
       - emqx-net
