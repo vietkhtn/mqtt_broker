@@ -1,0 +1,73 @@
+version: '3.8'
+
+x-emqx-common-env: &emqx-env
+  EMQX_CLUSTER__DISCOVERY_STRATEGY: static
+  EMQX_CLUSTER__STATIC__SEEDS: "[emqx1@emqx1,emqx2@emqx2,emqx3@emqx3]"
+  EMQX_NODE__COOKIE: ${EMQX_COOKIE}
+  EMQX_LISTENERS__SSL__DEFAULT__PROXY_PROTOCOL: 'true'
+  EMQX_LISTENERS__TCP__DEFAULT__PROXY_PROTOCOL: 'false'
+
+services:
+  emqx1:
+    image: emqx/emqx:5.8.6
+    container_name: emqx1
+    hostname: emqx1
+    environment:
+      <<: *emqx-env
+      EMQX_NODE__NAME: emqx1@emqx1
+      EMQX_DASHBOARD__DEFAULT_USERNAME: ${DASHBOARD_USERNAME}
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: ${DASHBOARD_PASSWORD}
+    ports:
+      - 18083:18083
+    restart: unless-stopped
+    networks:
+      - emqx-net
+
+  emqx2:
+    image: emqx/emqx:5.8.6
+    container_name: emqx2
+    hostname: emqx2
+    environment:
+      <<: *emqx-env
+      EMQX_NODE__NAME: emqx2@emqx2
+    restart: unless-stopped
+    networks:
+      - emqx-net
+
+  emqx3:
+    image: emqx/emqx:5.8.6
+    container_name: emqx3
+    hostname: emqx3
+    environment:
+      <<: *emqx-env
+      EMQX_NODE__NAME: emqx3@emqx3
+    restart: unless-stopped
+    networks:
+      - emqx-net
+
+  haproxy:
+    image: haproxy:3.2
+    container_name: haproxy
+    depends_on:
+      - emqx1
+      - emqx2
+      - emqx3
+    ulimits:
+      nofile:
+        soft: 1024000
+        hard: 1024000
+    ports:
+      - 1883:1883
+      - 8883:8883
+      - 8083:8083
+      - 8084:8084
+      - 8888:8888
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    restart: unless-stopped
+    networks:
+      - emqx-net
+
+networks:
+  emqx-net:
+    driver: bridge
