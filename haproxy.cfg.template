@@ -39,8 +39,8 @@ backend mqtts_backend
   server emqx3 emqx3.__HOST_DOMAIN__:1883 weight 3
 
 frontend mqtt_tls_frontend
-  bind *:8883 ssl crt /etc/haproxy/certs/__HOST_DOMAIN__.pem
-  # bind *:8883 ssl ca-file /etc/haproxy/certs/cacert.pem  crt /etc/haproxy/certs/__HOST_DOMAIN__.pem verify required
+  bind *:8883 ssl crt /etc/haproxy/certs/domain.pem
+  # bind *:8883 ssl ca-file /etc/haproxy/certs/cacert.pem  crt /etc/haproxy/certs/domain.pem verify required
   mode tcp
   default_backend mqtts_backend
 
@@ -59,7 +59,7 @@ frontend mqtt_ws_frontend
   
 
 frontend mqtt_ws_tls_frontend
-  bind *:8084 ssl crt /etc/haproxy/certs/__HOST_DOMAIN__.pem
+  bind *:8084 ssl crt /etc/haproxy/certs/domain.pem
   mode tcp 
   default_backend mqtt_ws_backend
 
