@@ -10,22 +10,19 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${SCRIPT_DIR}"
+TEMPLATE="${ROOT_DIR}/haproxy.cfg.template"
+TARGET="${ROOT_DIR}/haproxy.cfg"
 
-python3 - "${ROOT_DIR}" "${DOMAIN}" <<'PY'
-import pathlib
-import sys
+if [[ ! -f "${TEMPLATE}" ]]; then
+  echo "Template not found: ${TEMPLATE}" >&2
+  exit 1
+fi
 
-root = pathlib.Path(sys.argv[1])
-domain = sys.argv[2]
-template = root / "haproxy.cfg.template"
-target = root / "haproxy.cfg"
+ESCAPED_DOMAIN="${DOMAIN//\\/\\\\}"
+ESCAPED_DOMAIN="${ESCAPED_DOMAIN//&/\\&}"
+ESCAPED_DOMAIN="${ESCAPED_DOMAIN//|/\\|}"
 
-if not template.exists():
-  raise SystemExit(f"Template not found: {template}")
-
-data = template.read_text()
-target.write_text(data.replace("__HOST_DOMAIN__", domain))
-PY
+sed "s|__HOST_DOMAIN__|${ESCAPED_DOMAIN}|g" "${TEMPLATE}" > "${TARGET}"
 
 cat <<EOF
 Rendered haproxy.cfg for HOST_DOMAIN=${DOMAIN}.
