@@ -19,9 +19,9 @@ backend mqtt_backend
   stick-table type string len 32 size 1000k expire 30m
   stick on req.payload(0,0),mqtt_field_value(connect,client_identifier)
 
-  server emqx1 emqx1:1883
-  server emqx2 emqx2:1883
-  server emqx3 emqx3:1883
+  server emqx1 emqx1.__HOST_DOMAIN__:1883
+  server emqx2 emqx2.__HOST_DOMAIN__:1883
+  server emqx3 emqx3.__HOST_DOMAIN__:1883
 
 frontend mqtt_servers
   bind *:1883
@@ -34,14 +34,13 @@ backend mqtts_backend
   mode tcp
   balance roundrobin
 
-  # server emqx1 emqx1.ziopio.io.vn:1883 check-send-proxy send-proxy-v2 weight 5
-	server emqx1 emqx1:1883 weight 5
-  server emqx2 emqx2:1883 weight 2
-  server emqx3 emqx3:1883 weight 3
+  server emqx1 emqx1.__HOST_DOMAIN__:1883 weight 5
+  server emqx2 emqx2.__HOST_DOMAIN__:1883 weight 2
+  server emqx3 emqx3.__HOST_DOMAIN__:1883 weight 3
 
 frontend mqtt_tls_frontend
-  bind *:8883 ssl crt /etc/haproxy/certs/server.pem
-	# bind *:8883 ssl ca-file /etc/haproxy/certs/cacert.pem  crt /etc/haproxy/certs/server.pem verify required
+  bind *:8883 ssl crt /etc/haproxy/certs/__HOST_DOMAIN__.pem
+  # bind *:8883 ssl ca-file /etc/haproxy/certs/cacert.pem  crt /etc/haproxy/certs/__HOST_DOMAIN__.pem verify required
   mode tcp
   default_backend mqtts_backend
 
@@ -49,9 +48,9 @@ frontend mqtt_tls_frontend
 backend mqtt_ws_backend
   mode tcp
   balance roundrobin
-  server emqx1 emqx1:8083 check
-  server emqx2 emqx2:8083 check
-  server emqx3 emqx3:8083 check
+  server emqx1 emqx1.__HOST_DOMAIN__:8083 check
+  server emqx2 emqx2.__HOST_DOMAIN__:8083 check
+  server emqx3 emqx3.__HOST_DOMAIN__:8083 check
 
 frontend mqtt_ws_frontend
   bind *:8083 
@@ -60,7 +59,7 @@ frontend mqtt_ws_frontend
   
 
 frontend mqtt_ws_tls_frontend
-  bind *:8084 ssl crt /etc/haproxy/certs/server.pem
+  bind *:8084 ssl crt /etc/haproxy/certs/__HOST_DOMAIN__.pem
   mode tcp 
   default_backend mqtt_ws_backend
 
